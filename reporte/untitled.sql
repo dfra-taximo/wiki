@@ -39,9 +39,9 @@ SELECT
                     -- ipd.costimpoconsumo, 
                     -- ipd.costigv,
                     -- ipd.cloudfleet_move_id,
-                    mt.id AS move_id,
-                    mt.label AS move_label,
-                    mt.name AS move_name
+                    -- mt.id AS move_id,
+                    -- mt.label AS move_label,
+                    -- mt.name AS move_name
                 FROM 
                     -- invoice_purchase_detail AS ipd
                     -- LEFT JOIN invoice_purchase AS ip on ipd.invoice_purchase_id=ip.id
@@ -58,11 +58,10 @@ SELECT
                     -- LEFT JOIN territory_type as tty ON cca.territory_type_id=tty.id 
                     -- LEFT JOIN city cy ON cca.territory_id=cy.id
                     -- LEFT JOIN contract c ON cc.contract_id=c.id
-                    LEFT JOIN taxi t ON c.taxi_id=t.id
-                    LEFT JOIN fleet f ON t.fleet_id=f.id
-                    LEFT JOIN city ccostc ON f.city_id=ccostc.id 
-                    LEFT JOIN movement_type AS mt ON mt.id=tt.movement_type_id
-                    LEFT JOIN transaction_class AS tc ON tc.id=tt.transaction_class_id
+                    -- LEFT JOIN taxi t ON c.taxi_id=t.id
+                    -- LEFT JOIN fleet f ON t.fleet_id=f.id
+                    -- LEFT JOIN city ccostc ON f.city_id=ccostc.id 
+                    -- LEFT JOIN movement_type AS mt ON mt.id=tt.movement_type_id
                     LEFT JOIN provider_status AS prs ON prs.provider_id=ip.provider_id
                     LEFT JOIN cash_point AS cp ON cp.id=ip.cash_point_id
                     LEFT JOIN person AS prl ON prl.id=ip.provider_id
@@ -73,11 +72,11 @@ SELECT
                     and ap.cash_point_id=:cash_point_id
                     and ip.annulled=false
                     and ipd.active is true
-                    and prs.date=(
-                            SELECT 
-                                    MAX(date)
-                            FROM
-                                    provider_status
-                            WHERE
-                                    provider_id=ip.provider_id)
-                    ;
+                    -- and prs.date=(
+                    --         SELECT 
+                    --                 MAX(date)
+                    --         FROM
+                    --                 provider_status
+                    --         WHERE
+                    --                 provider_id=ip.provider_id)
+                    -- ;

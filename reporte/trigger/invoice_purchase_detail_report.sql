@@ -45,6 +45,7 @@ DECLARE
 
 	-- transaction_type
 	tipoop VARCHAR := null;
+	movement_type_id_v INTEGER := null;
 
 	-- cost_center
 	contract_v INTEGER := null;
@@ -70,6 +71,23 @@ DECLARE
 
 	-- taxi
 	plate_v VARCHAR := null;
+	fleet_id_v INTEGER := null; 
+
+	-- fleet
+	city_id_fleet_v INTEGER := null;
+
+	--	city ccostc
+	ccostc_name_v VARCHAR := null;
+
+	-- movement_type
+	move_id_v INTEGER := null;
+	move_label_v VARCHAR := null;
+	move_name_v VARCHAR := null;
+
+	-- provider_status
+	provider_status_date_v DATE := null;
+	max_date_provider DATE := null;
+
 
 --	COUNTS
 	count_invoice_purchase_v INTEGEr := 0;
@@ -89,6 +107,9 @@ DECLARE
 	count_contract_v INTEGER := 0;
 	count_taxi_v INTEGER := 0;
 	count_territory_type_v INTEGER := 0;
+	count_fleet_v INTEGER := 0;
+	count_movement_type_v INTEGER := 0;
+	count_provider_status_v INTEGER := 0;
 
 BEGIN
 
@@ -138,7 +159,7 @@ BEGIN
 	--	Obtenemos los datos de transaction_type
 	SELECT count(1) INTO count_transaction_type_v FROM transaction_type WHERE id = NEW.transaction_type_id AND NEW.transaction_type_id is not null;
 	IF count_transaction_type_v != 0 THEN
-		SELECT label INTO tipoop FROM transaction_type WHERE id = NEW.transaction_type_id AND NEW.transaction_type_id is not null;
+		SELECT label, movement_type_id INTO tipoop, movement_type_id_v FROM transaction_type WHERE id = NEW.transaction_type_id AND NEW.transaction_type_id is not null;
 	END IF;
 
 	--	Obtenemos los datos de cost_center
@@ -180,8 +201,37 @@ BEGIN
 	--	Obtenemos los datos de taxi
 	SELECT count(1) INTO count_taxi_v FROM taxi WHERE id = taxi_id_v AND taxi_id_v is not null;
 	IF count_taxi_v != 0 THEN
-		SELECT plate INTO plate_v FROM taxi WHERE id = taxi_id_v AND taxi_id_v is not null;
+		SELECT plate, fleet_id INTO plate_v, fleet_id_v FROM taxi WHERE id = taxi_id_v AND taxi_id_v is not null;
 	END IF;
+
+	--	Obtenemos los datos de fleet
+	SELECT count(1) INTO count_fleet_v FROM fleet WHERE id = fleet_id_v AND fleet_id_v is not null;
+	IF count_fleet_v != 0 THEN
+		SELECT city_id INTO city_id_fleet_v FROM fleet WHERE id = fleet_id_v AND fleet_id_v is not null;
+	END IF;
+
+	count_city_v := 0;
+	--	Obtenemos los datos de city ccostc
+	SELECT count(1) INTO count_city_v FROM city WHERE id = city_id_fleet_v AND city_id_fleet_v is not null;
+	IF count_city_v != 0 THEN
+		SELECT name INTO ccostc_name_v FROM city WHERE id = city_id_fleet_v AND city_id_fleet_v is not null;
+	END IF;
+
+	--	Obtenemos los datos de movement_type
+	SELECT count(1) INTO count_movement_type_v FROM movement_type WHERE id = movement_type_id_v AND movement_type_id_v is not null;
+	IF count_movement_type_v != 0 THEN
+		SELECT id, label, name INTO move_id_v, move_label_v, move_name_v FROM movement_type WHERE id = movement_type_id_v AND movement_type_id_v is not null;
+	END IF;
+
+	--	Obtenemos los datos de provider_status
+	SELECT count(1) INTO count_provider_status_v FROM provider_status WHERE id = provider_id_v AND provider_id_v is not null;
+	IF count_provider_status_v != 0 THEN
+		SELECT date INTO provider_status_date_v FROM provider_status WHERE id = provider_id_v AND provider_id_v is not null;
+	END IF;
+
+	SELECT max(date) INTO max_date_provider FROM provider_status WHERE provider_id = provider_id_v;
+
+	
 
 	-- RAISE NOTICE 'concepto_v: %' , concepto_v;
 	-- SELECT count(1) INTO count_reporte_periodo_v FROM reports.reporte_periodo WHERE  id = NEW.id;
