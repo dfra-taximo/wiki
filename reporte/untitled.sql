@@ -15,9 +15,9 @@ SELECT
                     -- ip.date AS fechadoc,
                     -- ip.date_expiration AS fecha_exp,
                     -- ip.number AS number_doc,
-                    cp.label AS caja,
+                    -- cp.label AS caja,
                     COALESCE (cy.name,ccostc.name) AS ciudad,
-                    cp.label as ciudad_caja,
+                    -- cp.label as ciudad_caja,
                     -- cc.contract_id AS contract,
                     COALESCE((cy.name||'  '||tty.label||'  '||sca.label),t.plate) AS ccenter,
                     -- fm.id AS fmid,
@@ -27,8 +27,8 @@ SELECT
                     -- sub.id AS subid,
                     -- sub.label AS sublabel,
                     -- ipd.detail,
-                    prl.name AS name_legalizer,
-                    prl.lastname AS lastname_legalizer,
+                    -- prl.name AS name_legalizer,
+                    -- prl.lastname AS lastname_legalizer,
                     -- ipd.quantity,
                     -- ipd.exempt_tax_cost,
                     -- ipd.cost, 
@@ -62,10 +62,11 @@ SELECT
                     -- LEFT JOIN fleet f ON t.fleet_id=f.id
                     -- LEFT JOIN city ccostc ON f.city_id=ccostc.id 
                     -- LEFT JOIN movement_type AS mt ON mt.id=tt.movement_type_id
-                    LEFT JOIN provider_status AS prs ON prs.provider_id=ip.provider_id
-                    LEFT JOIN cash_point AS cp ON cp.id=ip.cash_point_id
-                    LEFT JOIN person AS prl ON prl.id=ip.provider_id
+                    -- LEFT JOIN cash_point AS cp ON cp.id=ip.cash_point_id
+                    -- LEFT JOIN person AS prl ON prl.id=ip.provider_id
                     LEFT JOIN accounting_period ap ON ip.accounting_period_id=ap.id
+                    
+                    LEFT JOIN provider_status AS prs ON prs.provider_id=ip.provider_id
                 WHERE 
                     ap.year=:year
                     and ap.month=:month

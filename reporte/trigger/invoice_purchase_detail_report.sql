@@ -12,13 +12,22 @@ DECLARE
 
 --Variables
 
+	--Variables Generales
+	commercial_name_v VARCHAR := null;
+	ciudad_v VARCHAR := null;
+	ccenter_v VARCHAR := null;
+
+
 	-- invoice_purchase
 	entry_date_v TIMESTAMP WITHOUT TIME ZONE := null;
 	provider_id_v BIGINT := null;
-	date_v DATE := null;
-	date_expiration_v DATE := null;
-	number_v VARCHAR := null;
+	fechadoc_v DATE := null;
+	fecha_exp_v DATE := null;
+	number_doc_v VARCHAR := null;
 	invoice_purchase_type_id_v INTEGER := null;
+	cash_point_id_v INTEGER := null;
+	accounting_period_id_v INTEGER := null;
+	annulled_v BOOLEAN := null;
 
 	-- person
 	name_v VARCHAR := null;
@@ -36,15 +45,15 @@ DECLARE
 	fmlabel_v  VARCHAR := null;
 
 	-- system
-	sysid INTEGER := null;
-	syslabel VARCHAR := null;
+	sysid_v INTEGER := null;
+	syslabel_v VARCHAR := null;
 
 	-- subsystem
 	subid_v INTEGER := null;
 	sublabel_v VARCHAR := null;
 
 	-- transaction_type
-	tipoop VARCHAR := null;
+	tipoop_v VARCHAR := null;
 	movement_type_id_v INTEGER := null;
 
 	-- cost_center
@@ -63,8 +72,7 @@ DECLARE
 	tty_label_v VARCHAR := NULL;
 
 	-- city
-	cy_name VARCHAR := NULL;
-	ciudad VARCHAR := NULL;
+	cy_name_v VARCHAR := NULL;
 
 	-- contract
 	taxi_id_v INTEGER := null;
@@ -86,7 +94,22 @@ DECLARE
 
 	-- provider_status
 	provider_status_date_v DATE := null;
-	max_date_provider DATE := null;
+	max_date_v DATE := null;
+
+	-- cash_point
+	caja_v VARCHAR := null;
+	ciudad_caja_v VARCHAR := null;
+
+	-- person ext
+	name_legalizer_v VARCHAR := NULL;
+	lastname_legalizer_v VARCHAR := NULL;
+
+	--
+	cash_point_id_input_v INTEGER := NULL;
+	year_input_v INTEGER := null;
+	month_input_v INTEGER := null;
+
+	active_v BOOLEAN := NEW.active;
 
 
 --	COUNTS
@@ -110,6 +133,9 @@ DECLARE
 	count_fleet_v INTEGER := 0;
 	count_movement_type_v INTEGER := 0;
 	count_provider_status_v INTEGER := 0;
+	count_cash_point_v INTEGER := 0;
+	count_person_ext_v INTEGER := 0;
+	count_accounting_period_v INTEGER := 0;
 
 BEGIN
 
@@ -117,7 +143,7 @@ BEGIN
 	-- Obtenemos los datos de invoice_purchase
 	SELECT count(1) INTO count_invoice_purchase_v FROM invoice_purchase WHERE id = NEW.invoice_purchase_id AND NEW.invoice_purchase_id is not null;
 	IF count_invoice_purchase_v != 0 THEN
-		SELECT entry_date, provider_id, date, date_expiration, number, invoice_purchase_type_id INTO entry_date_v, provider_id_v, date_v, date_expiration_v, number_v, invoice_purchase_type_id_v FROM invoice_purchase WHERE id = NEW.invoice_purchase_id;
+		SELECT entry_date, provider_id, date, date_expiration, number, invoice_purchase_type_id, cash_point_id, accounting_period_id, annulled INTO entry_date_v, provider_id_v, fechadoc_v, fecha_exp_v, number_doc_v, invoice_purchase_type_id_v, cash_point_id_v, accounting_period_id_v, annulled_v FROM invoice_purchase WHERE id = NEW.invoice_purchase_id;
 	END IF;
 
 	-- Obtenemos los datos de person
@@ -147,19 +173,19 @@ BEGIN
 	--	Obtenemos los datos de system
 	SELECT count(1) INTO count_system_v FROM system WHERE id = NEW.system_id AND NEW.system_id is not null;
 	IF count_system_v != 0 THEN
-		SELECT id, label INTO sysid, syslabel FROM system WHERE id = NEW.system_id AND NEW.system_id is not null;
+		SELECT id, label INTO sysid_v, syslabel_v FROM system WHERE id = NEW.system_id AND NEW.system_id is not null;
 	END IF;
 
 	--	Obtenemos los datos de subsystem
 	SELECT count(1) INTO count_subsystem_v FROM subsystem WHERE id = NEW.sbsystem_id AND NEW.sbsystem_id is not null;
 	IF count_subsystem_v != 0 THEN
-		SELECT id, label INTO sysid, syslabel FROM subsystem WHERE id = NEW.sbsystem_id AND NEW.sbsystem_id is not null;
+		SELECT id, label INTO subid_v, sublabel_v FROM subsystem WHERE id = NEW.sbsystem_id AND NEW.sbsystem_id is not null;
 	END IF;
 
 	--	Obtenemos los datos de transaction_type
 	SELECT count(1) INTO count_transaction_type_v FROM transaction_type WHERE id = NEW.transaction_type_id AND NEW.transaction_type_id is not null;
 	IF count_transaction_type_v != 0 THEN
-		SELECT label, movement_type_id INTO tipoop, movement_type_id_v FROM transaction_type WHERE id = NEW.transaction_type_id AND NEW.transaction_type_id is not null;
+		SELECT label, movement_type_id INTO tipoop_v, movement_type_id_v FROM transaction_type WHERE id = NEW.transaction_type_id AND NEW.transaction_type_id is not null;
 	END IF;
 
 	--	Obtenemos los datos de cost_center
@@ -183,13 +209,13 @@ BEGIN
 	--	Obtenemos los datos de territory_type
 	SELECT count(1) INTO count_territory_type_v FROM territory_type WHERE id = territory_type_id_v AND territory_type_id_v is not null;
 	IF count_territory_type_v != 0 THEN
-		SELECT id, label INTO sysid, syslabel FROM territory_type WHERE id = territory_type_id_v AND territory_type_id_v is not null;
+		SELECT label INTO tty_label_v FROM territory_type WHERE id = territory_type_id_v AND territory_type_id_v is not null;
 	END IF;
 
 	--	Obtenemos los datos de city
 	SELECT count(1) INTO count_city_v FROM city WHERE id = territory_id_v AND territory_id_v is not null;
 	IF count_city_v != 0 THEN
-		SELECT name INTO cy_name FROM city WHERE id = territory_id_v AND territory_id_v is not null;
+		SELECT name INTO cy_name_v FROM city WHERE id = territory_id_v AND territory_id_v is not null;
 	END IF;
 
 	--	Obtenemos los datos de contract
@@ -223,28 +249,157 @@ BEGIN
 		SELECT id, label, name INTO move_id_v, move_label_v, move_name_v FROM movement_type WHERE id = movement_type_id_v AND movement_type_id_v is not null;
 	END IF;
 
-	--	Obtenemos los datos de provider_status
-	SELECT count(1) INTO count_provider_status_v FROM provider_status WHERE id = provider_id_v AND provider_id_v is not null;
-	IF count_provider_status_v != 0 THEN
-		SELECT date INTO provider_status_date_v FROM provider_status WHERE id = provider_id_v AND provider_id_v is not null;
+	--	Obtenemos los datos de cash_point
+	SELECT count(1) INTO count_cash_point_v FROM cash_point WHERE id = cash_point_id_v AND cash_point_id_v is not null;
+	IF count_cash_point_v != 0 THEN
+		SELECT label, label INTO caja_v, ciudad_caja_v FROM cash_point WHERE id = cash_point_id_v AND cash_point_id_v is not null;
 	END IF;
 
-	SELECT max(date) INTO max_date_provider FROM provider_status WHERE provider_id = provider_id_v;
+	--	Obtenemos los datos de person ext
+	SELECT count(1) INTO count_person_v FROM person WHERE id = provider_id_v AND provider_id_v is not null;
+	IF count_person_v != 0 THEN
+		SELECT name, lastname INTO name_legalizer_v, lastname_legalizer_v FROM person WHERE id = provider_id_v AND provider_id_v is not null;
+	END IF;
 
-	
+	--	Obtenemos los datos de accounting_period
+	SELECT count(1) INTO count_accounting_period_v FROM accounting_period WHERE id = accounting_period_id_v AND accounting_period_id_v is not null;
+	IF count_accounting_period_v != 0 THEN
+		SELECT year, month, cash_point_id INTO year_input_v, month_input_v, cash_point_id_input_v FROM accounting_period WHERE id = accounting_period_id_v AND accounting_period_id_v is not null;
+	END IF;
+
+	SELECT MAX(date) INTO max_date_v FROM provider_status WHERE provider_id=provider_id_v;
+
+	--	Obtenemos los datos de provider_status
+	SELECT count(1) INTO count_provider_status_v FROM provider_status WHERE provider_id = id AND provider_id_v is not null;
+	RAISE NOTICE 'test %' , provider_id_v;
+	IF count_provider_status_v != 0 THEN
+		SELECT  max(date) INTO max_date_v FROM provider_status WHERE id = provider_id_v AND provider_id_v is not null;
+	END IF;
+
+
+	commercial_name_v:= name_legalizer_v||' '||lastname_legalizer_v;
+
+	ciudad_v := COALESCE (cy_name_v,ccostc_name_v);
+
+	ccenter_v := COALESCE((cy_name_v||'  '||tty_label_v||'  '||sca_label_v),plate_v);
+
+	active_v := NEW.active;
+
 
 	-- RAISE NOTICE 'concepto_v: %' , concepto_v;
-	-- SELECT count(1) INTO count_reporte_periodo_v FROM reports.reporte_periodo WHERE  id = NEW.id;
-	-- IF count_reporte_periodo_v = 0 THEN
-	-- 	INSERT INTO reports.reporte_periodo 
-	-- 		(id, auditor_id, ipddate, ipdid, detail, quantity, exempt_tax_cost, cost, cost_to_pay, costiva, costreteica, costretefuente, costimpoconsumo, costigv, cloudfleet_move_id, invoice_purchase_id, concept_id, family_id, system_id, sbsystem_id, transaction_type_id, cost_center_id) 
-	-- 	VALUES 
-	-- 		(NEW.id, NEW.auditor_id, NEW.entry_date, NEW.id, NEW.detail, NEW.quantity, NEW.exempt_tax_cost, NEW.cost, NEW.cost_to_pay, NEW.costiva, NEW.costreteica, NEW.costretefuente, NEW.costimpoconsumo, NEW.costigv, NEW.cloudfleet_move_id, NEW.invoice_purchase_id, NEW.concept_id, NEW.family_id, NEW.system_id, NEW.sbsystem_id, NEW.transaction_type_id, NEW.cost_center_id);
-	-- ELSE
-	-- 	UPDATE reports.reporte_periodo SET
-	-- 		auditor_id = NEW.auditor_id, ipddate = NEW.entry_date, ipdid = NEW.id, detail = NEW.detail, quantity = NEW.quantity, exempt_tax_cost = NEW.exempt_tax_cost, cost = NEW.cost, cost_to_pay = NEW.cost_to_pay, costiva = NEW.costiva, costreteica = NEW.costreteica, costretefuente = NEW.costretefuente, costimpoconsumo = NEW.costimpoconsumo, costigv = NEW.costigv, cloudfleet_move_id = NEW.cloudfleet_move_id, invoice_purchase_id = NEW.invoice_purchase_id, concept_id = NEW.concept_id, family_id = NEW.family_id, system_id = NEW.system_id, sbsystem_id = NEW.sbsystem_id, transaction_type_id = NEW.transaction_type_id, cost_center_id = NEW.cost_center_id 
-	-- 	WHERE id = NEW.id;
-	-- END IF;
+	SELECT count(1) INTO count_reporte_periodo_v FROM reports.reporte_periodo WHERE  id = NEW.id;
+	IF count_reporte_periodo_v = 0 THEN
+		INSERT INTO reports.reporte_periodo 
+			(
+				id,
+				auditor_id,
+				ipddate,
+				ipdid,
+				entry_date,
+				tipoop,
+				concepto,
+				provider_id,
+				name,
+				document_type_id,
+				lastname,
+				commercial_name,
+				type_document,
+				fechadoc,
+				fecha_exp,
+				number_doc,
+				caja,
+				ciudad,
+				ciudad_caja,
+				contract,
+				ccenter,
+				fmid,
+				fmlabel,
+				sysid,
+				syslabel,
+				subid,
+				sublabel,
+				detail,
+				name_legalizer,
+				lastname_legalizer,
+				quantity,
+				exempt_tax_cost,
+				cost,
+				cost_to_pay,
+				costiva,
+				costreteica,
+				costretefuente,
+				costimpoconsumo,
+				costigv,
+				cloudfleet_move_id,
+				move_id,
+				move_label,
+				move_name,
+				year_input,
+				month_input,
+				cash_point_id_input,
+				max_date,
+				annulled,
+				active,
+				provider_status_date
+			) 
+		VALUES 
+			(
+				NEW.id,
+				NEW.auditor_id,
+				NEW.entry_date,
+				NEW.id,
+				entry_date_v,
+				tipoop_v,
+				concepto_v,
+				provider_id_v,
+				name_v,
+				document_type_id_v,
+				lastname_v,
+				commercial_name_v,
+				type_document_v,
+				fechadoc_v,
+				fecha_exp_v,
+				number_doc_v,
+				caja_v,
+				ciudad_v,
+				ciudad_caja_v,
+				contract_v,
+				ccenter_v,
+				fmid_v,
+				fmlabel_v,
+				sysid_v,
+				syslabel_v,
+				subid_v,
+				sublabel_v,
+				NEW.detail,
+				name_legalizer_v,
+				lastname_legalizer_v,
+				NEW.quantity,
+				NEW.exempt_tax_cost,
+				NEW.cost,
+				NEW.cost_to_pay,
+				NEW.costiva,
+				NEW.costreteica,
+				NEW.costretefuente,
+				NEW.costimpoconsumo,
+				NEW.costigv,
+				NEW.cloudfleet_move_id,
+				move_id_v,
+				move_label_v,
+				move_name_v,
+				year_input_v,
+				month_input_v,
+				cash_point_id_input_v,
+				max_date_v,
+				annulled_v,
+				active_v,
+				provider_status_date_v
+			);
+	ELSE
+		-- UPDATE reports.reporte_periodo SET
+
+		-- WHERE id = NEW.id;
+	END IF;
     RETURN NEW;
 END;
 $BODY$
