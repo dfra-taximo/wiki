@@ -126,6 +126,7 @@ DECLARE
 
 
 	-- invoice_purchase
+	ip_id_v BIGINT := null;
 	entry_date_v TIMESTAMP WITHOUT TIME ZONE := null;
 	provider_id_v BIGINT := null;
 	fechadoc_v DATE := null;
@@ -250,7 +251,11 @@ BEGIN
 	-- Obtenemos los datos de invoice_purchase
 	SELECT count(1) INTO count_invoice_purchase_v FROM invoice_purchase WHERE id = NEW.invoice_purchase_id AND NEW.invoice_purchase_id is not null;
 	IF count_invoice_purchase_v != 0 THEN
-		SELECT entry_date, provider_id, date, date_expiration, number, invoice_purchase_type_id, cash_point_id, accounting_period_id, annulled INTO entry_date_v, provider_id_v, fechadoc_v, fecha_exp_v, number_doc_v, invoice_purchase_type_id_v, cash_point_id_v, accounting_period_id_v, annulled_v FROM invoice_purchase WHERE id = NEW.invoice_purchase_id;
+		SELECT 
+			id, entry_date, provider_id, date, date_expiration, number, invoice_purchase_type_id, cash_point_id, accounting_period_id, annulled 
+		INTO 
+			ip_id_v, entry_date_v, provider_id_v, fechadoc_v, fecha_exp_v, number_doc_v, invoice_purchase_type_id_v, cash_point_id_v, accounting_period_id_v, annulled_v 
+		FROM invoice_purchase WHERE id = NEW.invoice_purchase_id;
 	END IF;
 
 	-- Obtenemos los datos de person
